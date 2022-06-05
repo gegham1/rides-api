@@ -5,6 +5,7 @@ import logger from './logger';
 import ValidationError from './utils/errors/ValidationError';
 import ServerError from './utils/errors/ServerError';
 import NotFoundError from './utils/errors/NotFoundError';
+import ErrorMessage from './utils/errors/ErrorMessage';
 
 const app = express();
 const jsonParser = bodyParser.json();
@@ -16,13 +17,13 @@ export default (db: Database) => {
   app.get('/health', (req, res) => res.send('Healthy'));
 
   app.post('/rides', jsonParser, (req, res) => {
-    const startLatitude = Number(req.body.start_lat);
-    const startLongitude = Number(req.body.start_long);
-    const endLatitude = Number(req.body.end_lat);
-    const endLongitude = Number(req.body.end_long);
-    const riderName = req.body.rider_name;
-    const driverName = req.body.driver_name;
-    const driverVehicle = req.body.driver_vehicle;
+    const startLatitude = Number(req.body.startLat);
+    const startLongitude = Number(req.body.startLong);
+    const endLatitude = Number(req.body.endLat);
+    const endLongitude = Number(req.body.endLong);
+    const riderName = req.body.riderName;
+    const driverName = req.body.driverName;
+    const driverVehicle = req.body.driverVehicle;
 
     if (
       startLatitude < -90 ||
@@ -31,7 +32,7 @@ export default (db: Database) => {
       startLongitude > 180
     ) {
       const error = new ValidationError(
-        'Start latitude and longitude must be between -90 - 90 and -180 to 180 degrees respectively',
+        ErrorMessage.INVALID_START_LATITUDE_LONGITUDE,
       );
       logError(error);
       return res.status(400).send(error);
@@ -44,44 +45,38 @@ export default (db: Database) => {
       endLongitude > 180
     ) {
       const error = new ValidationError(
-        'End latitude and longitude must be between -90 - 90 and -180 to 180 degrees respectively',
+        ErrorMessage.INVALID_END_LATITUDE_LONGITUDE,
       );
       logError(error);
       return res.status(400).send(error);
     }
 
     if (typeof riderName !== 'string' || riderName.length < 1) {
-      const error = new ValidationError(
-        'Rider name must be a non empty string',
-      );
+      const error = new ValidationError(ErrorMessage.INVALID_RIDER_NAME);
       logError(error);
       return res.status(400).send(error);
     }
 
     if (typeof driverName !== 'string' || driverName.length < 1) {
-      const error = new ValidationError(
-        'Driver name must be a non empty string',
-      );
+      const error = new ValidationError(ErrorMessage.INVALID_DRIVER_NAME);
       logError(error);
       return res.status(400).send(error);
     }
 
     if (typeof driverVehicle !== 'string' || driverVehicle.length < 1) {
-      const error = new ValidationError(
-        'Vehicle name must be a non empty string',
-      );
+      const error = new ValidationError(ErrorMessage.INVALID_VEHICLE_NAME);
       logError(error);
       return res.status(400).send(error);
     }
 
     const values = [
-      req.body.start_lat,
-      req.body.start_long,
-      req.body.end_lat,
-      req.body.end_long,
-      req.body.rider_name,
-      req.body.driver_name,
-      req.body.driver_vehicle,
+      req.body.startLat,
+      req.body.startLong,
+      req.body.endLat,
+      req.body.endLong,
+      req.body.riderName,
+      req.body.driverName,
+      req.body.driverVehicle,
     ];
 
     db.run(
@@ -104,7 +99,7 @@ export default (db: Database) => {
               return res.status(500).send(error);
             }
 
-            res.send(rows);
+            res.status(201).send(rows);
           },
         );
       },
