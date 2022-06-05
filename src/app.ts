@@ -10,7 +10,8 @@ const app = express();
 const jsonParser = bodyParser.json();
 
 export default (db: Database) => {
-  const logError = (error: { message: string, errorCode: string }) => logger.error({ ...error });
+  const logError = (error: { message: string; errorCode: string }) =>
+    logger.error({ ...error });
 
   app.get('/health', (req, res) => res.send('Healthy'));
 
@@ -29,7 +30,9 @@ export default (db: Database) => {
       startLongitude < -180 ||
       startLongitude > 180
     ) {
-      const error = new ValidationError('Start latitude and longitude must be between -90 - 90 and -180 to 180 degrees respectively');
+      const error = new ValidationError(
+        'Start latitude and longitude must be between -90 - 90 and -180 to 180 degrees respectively',
+      );
       logError(error);
       return res.status(400).send(error);
     }
@@ -40,25 +43,33 @@ export default (db: Database) => {
       endLongitude < -180 ||
       endLongitude > 180
     ) {
-      const error = new ValidationError('End latitude and longitude must be between -90 - 90 and -180 to 180 degrees respectively');
+      const error = new ValidationError(
+        'End latitude and longitude must be between -90 - 90 and -180 to 180 degrees respectively',
+      );
       logError(error);
       return res.status(400).send(error);
     }
 
     if (typeof riderName !== 'string' || riderName.length < 1) {
-      const error = new ValidationError('Rider name must be a non empty string');
+      const error = new ValidationError(
+        'Rider name must be a non empty string',
+      );
       logError(error);
       return res.status(400).send(error);
     }
 
     if (typeof driverName !== 'string' || driverName.length < 1) {
-      const error = new ValidationError('Driver name must be a non empty string');
+      const error = new ValidationError(
+        'Driver name must be a non empty string',
+      );
       logError(error);
       return res.status(400).send(error);
     }
 
     if (typeof driverVehicle !== 'string' || driverVehicle.length < 1) {
-      const error = new ValidationError('Vehicle name must be a non empty string');
+      const error = new ValidationError(
+        'Vehicle name must be a non empty string',
+      );
       logError(error);
       return res.status(400).send(error);
     }
