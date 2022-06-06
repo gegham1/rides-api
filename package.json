@@ -10,9 +10,12 @@
     "test": "jest",
     "start:dev": "nodemon index.ts --inspect=8866",
     "start:debug": "node --inspect -r ts-node/register index.ts",
+    "start": "node -r ts-node/register index.ts",
     "lint": "eslint \"{src,tests}/**/*.ts\" --fix",
     "coverage": "jest --coverage=true",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "test:artillery": "artillery run tests/artillery.yaml",
+    "test:load": "forever start --minUptime 25000 --spinSleepTime 150 -v -c ts-node index.ts && npm run test:artillery"
   },
   "keywords": [
     "Xendit"
@@ -21,10 +24,12 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@jest-mock/express": "^1.4.5",
+    "artillery": "^2.0.0-18",
     "body-parser": "^1.19.0",
     "class-validator": "^0.13.2",
     "dotenv": "^16.0.1",
     "express": "^4.16.4",
+    "forever": "^4.0.3",
     "helmet": "^5.1.0",
     "jest": "^28.1.0",
     "sqlite3": "^5.0.8",

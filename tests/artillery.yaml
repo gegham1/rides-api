@@ -1,0 +1,45 @@
+config:
+  target: "http://localhost:3001"
+  phases:
+    - duration: 30
+      arrivalRate: 100
+      name: "max load"
+  payload:
+    path: "stubs/rides-payload.csv"
+    fields:
+      - "riderName"
+      - "driverName"
+      - "driverVehicle"
+      - "endLong"
+      - "endLat"
+      - "startLat"
+      - "startLong"
+ensure:
+  thresholds:
+    - 'http.response_time.p99': 50
+scenarios:
+  - name: "Health Check"
+    flow:
+      - get:
+          url: '/health'
+  - name: "Complete Flow"
+    flow:
+      - post:
+          url: '/rides'
+          json:
+            riderName: "{{ riderName }}"
+            driverName: "{{ driverName }}"
+            driverVehicle: "{{ driverVehicle }}"
+            endLong: "{{ endLong }}"
+            endLat: "{{ endLat }}"
+            startLat: "{{ startLat }}"
+            startLong: "{{ startLong }}"
+          capture:
+            json: "$[0].rideID"
+            as: "rideID"
+      - think: 5
+      - get:
+          url: "/rides/{{ rideID }}"
+      - think: 5
+      - get:
+          url: "/rides"
