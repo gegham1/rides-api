@@ -1,5 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import helmet from 'helmet';
 import rideController from './controllers/RideController';
 import validatePostRideBody from './validators/validatePostRideBody';
 import validateParamId from './validators/validateParamId';
@@ -8,6 +9,7 @@ const app = express();
 const jsonParser = bodyParser.json();
 
 app.use(jsonParser);
+app.use(helmet());
 
 app.get('/health', (req, res) => res.send('Healthy'));
 app.get('/rides', rideController.getAllRides);
