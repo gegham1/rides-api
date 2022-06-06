@@ -16,7 +16,5 @@ export default (db: Database) => {
         )
     `;
 
-  db.run(createRideTableSchema);
-
-  return db;
+  return db.run(createRideTableSchema);
 };

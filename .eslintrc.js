@@ -16,4 +16,7 @@ module.exports = {
     es6: true,
   },
   ignorePatterns: ['.eslintrc.js'],
+  rules: {
+    '@typescript-eslint/no-explicit-any': 'off',
+  },
 };
