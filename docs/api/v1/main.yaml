@@ -1,0 +1,163 @@
+openapi: 3.0.2
+info:
+  title: Rides API
+  version: 1.0.0
+  description: Service for creating and fetching Rides
+  contact:
+    name: Gegham Ayvazyan
+    email: geghamayvazyan9@gmail.com
+paths:
+  /health:
+    get:
+      description: check service status
+      responses:
+        '200':
+          description: successful result
+          content:
+            text/plain:
+              schema:
+                type: string
+                enum:
+                  - Healthy
+  /rides/{id}:
+    get:
+      description: get ride by id
+      responses:
+        '200':
+          description: successful result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ride'
+        '404':
+          description: rides are empty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: in case of server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerError'
+  /rides:
+    get:
+      description: get all rides
+      responses:
+        '200':
+          description: successful result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rides'
+        '404':
+          description: rides are empty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: in case of server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerError'
+    post:
+      description: create new ride
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RideDto'
+      responses:
+        '201':
+          description: successful result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rides'
+        '500':
+          description: in case of server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerError'
+        '400':
+          description: in case of validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+components:
+  schemas:
+    NotFoundError:
+      type: object
+      properties:
+        message:
+          type: string
+        error_code:
+          type: string
+          enum:
+            - RIDES_NOT_FOUND_ERROR
+    ServerError:
+      type: object
+      properties:
+        message:
+          type: string
+        error_code:
+          type: string
+          enum:
+            - SERVER_ERROR
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+        error_code:
+          type: string
+          enum:
+            - VALIDATION_ERROR
+    Rides:
+      type: array
+      items:
+        $ref: '#/components/schemas/Ride'
+    Ride:
+      type: object
+      properties:
+        rideID:
+          type: integer
+        startLat:
+          type: integer
+        startLong:
+          type: integer
+        endLat:
+          type: integer
+        endLong:
+          type: integer
+        riderName:
+          type: string
+        driverName:
+          type: string
+        driverVehicle:
+          type: string
+        created:
+          type: string
+    RideDto:
+      type: object
+      properties:
+        startLat:
+          type: integer
+        startLong:
+          type: integer
+        endLat:
+          type: integer
+        endLong:
+          type: integer
+        riderName:
+          type: string
+        driverName:
+          type: string
+        driverVehicle:
+          type: string
