@@ -34,6 +34,14 @@ export class RideRepository implements RideRepositoryInterface {
     await this.runAsync('ROLLBACK');
   }
 
+  async findById(id: number): Promise<Ride[]> {
+    const rows = await this.runAllAsync(
+      'SELECT * FROM Rides WHERE rideID = ?',
+      id,
+    );
+    return rows as Ride[];
+  }
+
   async create(data: Partial<Ride>): Promise<Ride[]> {
     const values = [
       data.startLat,
@@ -58,10 +66,7 @@ export class RideRepository implements RideRepositoryInterface {
         throw new Error('ride record was not created');
       }
 
-      const rides = await this.runAllAsync(
-        'SELECT * FROM Rides WHERE rideID = ?',
-        lastRow.id,
-      );
+      const rides = await this.findById(lastRow.id);
 
       await this.commitTransaction();
 
@@ -76,9 +81,7 @@ export class RideRepository implements RideRepositoryInterface {
 
   async getById(id: number): Promise<Ride> {
     try {
-      const rows = await this.runAllAsync(
-        `SELECT * FROM Rides WHERE rideID='${id}'`,
-      );
+      const rows = await this.findById(id);
 
       return rows[0] as Ride;
     } catch (err) {
