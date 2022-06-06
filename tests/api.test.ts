@@ -1,14 +1,16 @@
 import request from 'supertest';
 import sqlite3, { Database } from 'sqlite3';
-import appFactory from '../src/app';
+import app from '../src/app';
 import buildSchemas from '../src/schemas';
-import ErrorCode from '../src/utils/errors/ErrorCode';
-import ErrorMessage from '../src/utils/errors/ErrorMessage';
+import ErrorCode from '../src/errors/ErrorCode';
+import ErrorMessage from '../src/errors/ErrorMessage';
 import getMockRides from './stubs/getMockRides';
 import getMockRidePayload from './stubs/getMockRidePayload';
+import db from '../src/sqlite3';
 
-const db = new (sqlite3.verbose().Database)(':memory:');
-const app = appFactory(db);
+jest.mock('../src/sqlite3', () => {
+  return new (sqlite3.verbose().Database)(':memory:');
+});
 
 jest.mock('../src/logger', () => ({
   error: jest.fn(),
@@ -16,6 +18,13 @@ jest.mock('../src/logger', () => ({
 }));
 
 describe('API tests', () => {
+  const postRide = (payload: Record<string, any>) => {
+    return request(app)
+      .post('/rides')
+      .send(payload)
+      .set('Accept', 'application/json');
+  };
+
   beforeEach(async () => {
     await db.serialize();
     buildSchemas(db);
@@ -45,12 +54,9 @@ describe('API tests', () => {
     });
 
     it('should return an unknown error', async () => {
-      jest
-        .spyOn(db, 'all')
-        .mockImplementationOnce((query: string, cb): Database => {
-          cb(new Error('something bad happened!'));
-          return db;
-        });
+      jest.spyOn(db, 'all').mockImplementationOnce((): Database => {
+        throw new Error('something bad happened!');
+      });
       const response = await request(app)
         .get('/rides')
         .set('Accept', 'application/json');
@@ -60,12 +66,8 @@ describe('API tests', () => {
     });
 
     it('should return an array of rides', async () => {
-      jest
-        .spyOn(db, 'all')
-        .mockImplementationOnce((query: string, cb): Database => {
-          cb(null, getMockRides());
-          return db;
-        });
+      const mockData = getMockRidePayload();
+      await postRide(mockData);
       const response = await request(app)
         .get('/rides')
         .set('Accept', 'application/json');
@@ -76,13 +78,6 @@ describe('API tests', () => {
   });
 
   describe('POST /rides', () => {
-    const postRide = (payload: Record<string, any>) => {
-      return request(app)
-        .post('/rides')
-        .send(payload)
-        .set('Accept', 'application/json');
-    };
-
     it('should return validation error on startLat', async () => {
       const payload = {
         ...getMockRidePayload(),
@@ -176,12 +171,9 @@ describe('API tests', () => {
     });
 
     it('should return an unknown error', async () => {
-      jest
-        .spyOn(db, 'all')
-        .mockImplementationOnce((query: string, id: string, cb): Database => {
-          cb(new Error('something bad happened!'));
-          return db;
-        });
+      jest.spyOn(db, 'all').mockImplementationOnce((): Database => {
+        throw new Error('something bad happened!');
+      });
       const response = await postRide(getMockRidePayload());
 
       expect(response.body.errorCode).toBe(ErrorCode.SERVER_ERROR);
@@ -189,16 +181,10 @@ describe('API tests', () => {
     });
 
     it('should return the ride object', async () => {
-      const mockResult = [getMockRides()[0]];
-      jest
-        .spyOn(db, 'all')
-        .mockImplementationOnce((query: string, id: string, cb): Database => {
-          cb(null, mockResult);
-          return db;
-        });
-      const response = await postRide(getMockRidePayload());
+      const mockData = getMockRidePayload();
+      const response = await postRide(mockData);
 
-      expect(response.body).toMatchObject(mockResult);
+      expect(response.body).toMatchObject(getMockRides());
       expect(response.status).toBe(201);
     });
   });
@@ -214,12 +200,9 @@ describe('API tests', () => {
     });
 
     it('should return an unknown error', async () => {
-      jest
-        .spyOn(db, 'all')
-        .mockImplementationOnce((query: string, cb): Database => {
-          cb(new Error('something bad happened!'));
-          return db;
-        });
+      jest.spyOn(db, 'all').mockImplementationOnce((): Database => {
+        throw new Error('something bad happened!');
+      });
       const response = await request(app)
         .get('/rides/1')
         .set('Accept', 'application/json');
@@ -229,12 +212,8 @@ describe('API tests', () => {
     });
 
     it('should return an array of rides', async () => {
-      jest
-        .spyOn(db, 'all')
-        .mockImplementationOnce((query: string, cb): Database => {
-          cb(null, getMockRides()[0]);
-          return db;
-        });
+      const mockData = getMockRidePayload();
+      await postRide(mockData);
       const response = await request(app)
         .get('/rides/1')
         .set('Accept', 'application/json');
